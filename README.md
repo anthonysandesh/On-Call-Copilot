@@ -1,4 +1,4 @@
-# Incident Copilot
+# On-Call Incident Copilot
 
 SRE / On-Call copilot with RAG, PromQL tool-calling, Unsloth fine-tuning paths, and mock CPU mode. Ships with offline sample data and end-to-end evaluation so `make test` and `make demo` work without downloads.
 
