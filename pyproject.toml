@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "incident-copilot"
+version = "0.1.0"
+description = "SRE / On-Call Incident Copilot with RAG, Unsloth training, tool-calling, and evaluation."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.23.0",
+    "pydantic>=2.6.1,<3",
+    "prometheus-client>=0.19.0",
+    "sentence-transformers>=2.2.2",
+    "faiss-cpu>=1.7.4",
+    "numpy>=1.26.0",
+    "httpx>=0.25.0",
+    "python-dateutil>=2.8.2",
+    "tqdm>=4.66.0",
+    "rich>=13.7.0",
+    "typer>=0.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "mypy>=1.8.0",
+    "ruff>=0.2.0",
+    "types-requests>=2.31.0.10",
+    "types-python-dateutil>=2.8.19.14",
+]
+training = [
+    "unsloth>=0.5.0",
+    "transformers>=4.38.0",
+    "accelerate>=0.27.0",
+    "datasets>=2.17.0",
+    "trl>=0.9.0",
+    "peft>=0.10.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "B", "UP"]
+extend-ignore = ["E501"]
+
+[tool.ruff.isort]
+known-first-party = ["incident_copilot", "rag", "tools", "serving", "eval"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+strict_optional = false
+exclude = ["artifacts"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+packages = ["incident_copilot", "rag", "tools", "serving", "eval", "training"]

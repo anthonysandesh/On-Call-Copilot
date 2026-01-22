@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+    environment:
+      - MODEL_MODE=MOCK
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./data:/app/data:ro
+  vllm:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.vllm
+    environment:
+      - MODEL_NAME=${MODEL_NAME:-facebook/opt-1.3b}
+    ports:
+      - "8001:8001"

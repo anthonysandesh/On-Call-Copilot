@@ -1,0 +1,118 @@
+Metadata-Version: 2.4
+Name: incident-copilot
+Version: 0.1.0
+Summary: SRE / On-Call Incident Copilot with RAG, Unsloth training, tool-calling, and evaluation.
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.110.0
+Requires-Dist: uvicorn>=0.23.0
+Requires-Dist: pydantic<3,>=2.6.1
+Requires-Dist: prometheus-client>=0.19.0
+Requires-Dist: sentence-transformers>=2.2.2
+Requires-Dist: faiss-cpu>=1.7.4
+Requires-Dist: numpy>=1.26.0
+Requires-Dist: httpx>=0.25.0
+Requires-Dist: python-dateutil>=2.8.2
+Requires-Dist: tqdm>=4.66.0
+Requires-Dist: rich>=13.7.0
+Requires-Dist: typer>=0.9.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Requires-Dist: mypy>=1.8.0; extra == "dev"
+Requires-Dist: ruff>=0.2.0; extra == "dev"
+Requires-Dist: types-requests>=2.31.0.10; extra == "dev"
+Requires-Dist: types-python-dateutil>=2.8.19.14; extra == "dev"
+Provides-Extra: training
+Requires-Dist: unsloth>=0.5.0; extra == "training"
+Requires-Dist: transformers>=4.38.0; extra == "training"
+Requires-Dist: accelerate>=0.27.0; extra == "training"
+Requires-Dist: datasets>=2.17.0; extra == "training"
+Requires-Dist: trl>=0.9.0; extra == "training"
+Requires-Dist: peft>=0.10.0; extra == "training"
+
+# Incident Copilot
+
+SRE / On-Call copilot with RAG, PromQL tool-calling, Unsloth fine-tuning paths, and mock CPU mode. Ships with offline sample data and end-to-end evaluation so `make test` and `make demo` work without downloads.
+
+## Features
+- FastAPI API with `/v1/triage`, `/healthz`, `/metrics` (Prometheus).
+- Mock/CPU model mode plus hooks for Transformers and vLLM OpenAI endpoints.
+- RAG over markdown runbooks using sentence-transformers embeddings + FAISS (mock embedding fallback).
+- PromQL tool schema + validator + mock executor.
+- Offline evaluation harness for tool-call correctness, groundedness, hallucinations, and latency.
+- Unsloth QLoRA SFT scripts, adapter merge helper, DPO scaffold, Docker + Helm + CI.
+
+## Architecture
+```mermaid
+flowchart LR
+    Client -->|/v1/triage| API[FastAPI]
+    API --> Metrics[Prometheus Metrics]
+    API --> Model[Model Client\nMock / Transformers / vLLM]
+    Model --> Tools[PromQL Tool\nPydantic schema + validator]
+    Model --> RAG[Retriever\nFAISS + embeddings]
+    RAG --> Runbooks[Runbook Chunks\nartifacts/chunks.jsonl]
+    Model --> Response[Checklist, hypotheses, tool calls,\nremediations + citations, postmortem]
+    Eval[Offline Eval] --> Model
+    Eval --> RAG
+    Train[Unsloth SFT/DPO] --> Adapters[artifacts/adapters]
+    Adapters --> vLLM
+```
+
+## Quickstart (mock mode, CPU)
+```bash
+make setup        # create .venv and install deps
+make ingest       # builds FAISS index from sample runbooks (mock embeddings)
+make run          # start FastAPI with MODEL_MODE=MOCK on :8000
+```
+Sample request:
+```bash
+curl -X POST http://localhost:8000/v1/triage \
+  -H "Content-Type: application/json" \
+  -d "$(head -n 1 data/sample_incidents.jsonl)"
+```
+Demo without server:
+```bash
+make demo
+```
+
+## RAG ingestion
+- Run `make ingest` (uses mock embeddings by default for offline reproducibility).
+- Artifacts land in `artifacts/{faiss.index,chunks.jsonl,index_meta.json}`.
+
+## Evaluation
+```bash
+make eval         # runs eval/offline_eval.py in mock mode
+```
+Outputs JSON report under `artifacts/eval_reports/` with tool-call validity, citation coverage, groundedness, hallucination flag rate, and latency.
+
+## Testing, lint, typecheck
+```bash
+make lint
+make typecheck
+make test
+```
+
+## Training (GPU required)
+- Install training extras: `pip install .[training]`.
+- SFT with Unsloth QLoRA (needs GPU, defaults to `BASE_MODEL_NAME` env):
+  ```bash
+  python training/sft_unsloth.py train data/training.jsonl --max-steps 200
+  ```
+- Merge adapters: `python training/merge_adapters.py <base_model> artifacts/adapters/<run_id> artifacts/merged-model`
+- DPO scaffold: `python training/dpo_unsloth.py train <preference_data>`
+
+## Serving with vLLM
+- Build/start API + vLLM together:
+  ```bash
+  docker-compose up --build
+  ```
+- Point API at vLLM by setting `MODEL_MODE=vllm` and `VLLM_ENDPOINT=http://vllm:8001`.
+
+## Helm (minimal)
+`infra/helm` includes a minimal Deployment/Service. Adjust image and env vars, then `helm install incident-copilot infra/helm`.
+
+## Resume bullets
+- Built an SRE incident copilot with FastAPI, PromQL tool-calling, RAG over runbooks, and Prometheus metrics.
+- Added offline eval harness (tool-call correctness, groundedness, hallucination checks) with mock CPU mode for CI.
+- Delivered Unsloth QLoRA fine-tuning + adapter merge pipeline, Docker/Helm deploys, and GitHub Actions CI (lint/type/test).

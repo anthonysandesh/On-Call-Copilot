@@ -1,0 +1,6 @@
+apiVersion: v2
+name: incident-copilot
+description: Minimal Helm chart for the Incident Copilot API
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

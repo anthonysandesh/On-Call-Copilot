@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[dev]
+      - name: Build RAG artifacts
+        run: |
+          python rag/ingest_runbooks.py --embedding-model mock
+      - name: Lint
+        run: ruff check .
+      - name: Typecheck
+        run: mypy .
+      - name: Tests
+        run: pytest

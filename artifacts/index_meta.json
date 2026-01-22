@@ -1,0 +1,5 @@
+{
+  "embedding_model": "mock",
+  "dim": 64,
+  "chunk_count": 6
+}

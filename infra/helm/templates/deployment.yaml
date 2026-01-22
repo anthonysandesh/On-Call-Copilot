@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: incident-copilot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: incident-copilot
+  template:
+    metadata:
+      labels:
+        app: incident-copilot
+    spec:
+      containers:
+        - name: api
+          image: incident-copilot:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MODEL_MODE
+              value: "MOCK"
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000

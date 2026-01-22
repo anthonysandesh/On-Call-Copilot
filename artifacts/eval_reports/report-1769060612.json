@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-01-22T05:43:32.349170Z",
+  "samples": [
+    {
+      "incident_id": "EVAL-001",
+      "tool_calls": 1,
+      "citations": [
+        "rbk-web-tier-6aed9093ffdd",
+        "rbk-database-e9ddb4a0ce67",
+        "rbk-web-tier-fbf957f29727"
+      ],
+      "latency_ms": 3.6752079613506794
+    },
+    {
+      "incident_id": "EVAL-002",
+      "tool_calls": 1,
+      "citations": [
+        "rbk-web-tier-bec318e4acd9",
+        "rbk-database-e9ddb4a0ce67",
+        "rbk-web-tier-6aed9093ffdd"
+      ],
+      "latency_ms": 0.08191599044948816
+    }
+  ],
+  "metrics": {
+    "tool_call_valid_rate": 1.0,
+    "citation_coverage_rate": 1.0,
+    "hallucination_flag_rate": 0.0,
+    "groundedness_rate": 1.0,
+    "response_latency_ms_avg": 1.8785619759000838
+  },
+  "model_mode": "mock"
+}

@@ -1,0 +1,7 @@
+FROM vllm/vllm-openai:latest
+
+# Expects GPU runtime. Configure model via MODEL_NAME env var.
+ENV MODEL_NAME=${MODEL_NAME:-"facebook/opt-1.3b"}
+
+EXPOSE 8001
+CMD ["--model", "${MODEL_NAME}", "--port", "8001"]
